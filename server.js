@@ -89,6 +89,91 @@ app.post('/api/evaluate', (req, res) => {
   return res.json(evaluationMock);
 });
 
+// 登录验证
+app.post('/api/login', (req, res) => {
+  const { username, password } = req.body;
+  
+  // 简单验证（实际项目中应查询数据库）
+  const validUsers = {
+    'admin': 'admin123',
+    'user': 'user123',
+    'demo': 'demo123'
+  };
+  
+  if (validUsers[username] && validUsers[username] === password) {
+    return res.json({
+      success: true,
+      user: { username, role: username === 'admin' ? 'admin' : 'user' }
+    });
+  } else {
+    return res.status(401).json({ error: '用户名或密码错误' });
+  }
+});
+
+// 个性化报告生成
+app.post('/api/generate-report', async (req, res) => {
+  const { username } = req.body;
+  
+  const prompt = `请为用户 "${username}" 生成一份个性化的社区治理报告，包含以下内容：
+1. 用户关注领域分析
+2. 基于风险画像的治理建议
+3. 近期推送内容回顾
+4. 下一步行动建议
+
+当前风险画像：${JSON.stringify(RISK_PROFILE, null, 2)}`;
+
+  try {
+    const content = await getPushContent(prompt);
+    const report = {
+      title: `${username} 的个性化治理报告`,
+      content: content,
+      generatedAt: new Date().toLocaleString(),
+      username: username
+    };
+    return res.json({ report });
+  } catch (error) {
+    console.error('生成报告失败：', error?.message || error);
+    return res.json({
+      report: {
+        title: `${username} 的个性化治理报告`,
+        content: FALLBACK_PUSH_TEXT,
+        generatedAt: new Date().toLocaleString(),
+        username: username
+      }
+    });
+  }
+});
+
+// 获取个性化报告
+app.post('/api/personalized-report', async (req, res) => {
+  const { username } = req.body;
+  
+  // 简单实现：返回基于用户历史的个性化报告
+  const prompt = `请为用户 "${username}" 生成一份简要的个性化社区治理报告（基于已有数据）。
+
+当前风险画像：${JSON.stringify(RISK_PROFILE, null, 2)}`;
+
+  try {
+    const content = await getPushContent(prompt);
+    return res.json({
+      report: {
+        title: `${username} 的个性化治理报告`,
+        content: content,
+        generatedAt: new Date().toLocaleString()
+      }
+    });
+  } catch (error) {
+    console.error('获取报告失败：', error?.message || error);
+    return res.json({
+      report: {
+        title: `${username} 的个性化治理报告`,
+        content: FALLBACK_PUSH_TEXT,
+        generatedAt: new Date().toLocaleString()
+      }
+    });
+  }
+});
+
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });

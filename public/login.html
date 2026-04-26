@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>登录 - 云鉴治微</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body style="background-color: var(--color-paper); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem;">
+    <div style="width: 100%; max-width: 28rem;">
+      <div style="margin-bottom: 2rem; text-align: center;">
+        <div style="margin-bottom: 1rem; display: flex; justify-content: center; align-items: center; gap: 1rem;">
+          <img src="images/logo.svg" alt="Logo" style="height: 4rem; width: auto;" onerror="this.style.display='none'" />
+          <span style="font-family: var(--font-title); font-size: 1.875rem; font-weight: 900; color: var(--color-primary);">云鉴治微</span>
+        </div>
+        <p style="font-size: 1.125rem; color: var(--color-slate-600);">社区法治生态智能预警与靶向普控系统</p>
+      </div>
+
+      <div style="background-color: white; border: 1px solid var(--color-slate-200); border-radius: 1rem; padding: 2rem; box-shadow: var(--shadow-lg);">
+        <h2 style="font-family: var(--font-title); font-size: 1.5rem; font-weight: 700; color: var(--color-primary); margin-bottom: 1.5rem; text-align: center;">用户登录</h2>
+          
+          <form id="loginForm" style="display: flex; flex-direction: column; gap: 1.25rem;">
+            <div>
+              <label for="username" style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500; color: var(--color-slate-700);">用户名</label>
+              <input id="username" type="text" required style="width: 100%; background-color: white; border: 1px solid var(--color-slate-300); border-radius: 0.5rem; padding: 0.75rem 1rem; font-size: 1rem;" placeholder="请输入用户名" />
+            </div>
+            
+            <div>
+              <label for="password" style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500; color: var(--color-slate-700);">密码</label>
+              <input id="password" type="password" required style="width: 100%; background-color: white; border: 1px solid var(--color-slate-300); border-radius: 0.5rem; padding: 0.75rem 1rem; font-size: 1rem;" placeholder="请输入密码" />
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <label style="display: flex; align-items: center; gap: 0.5rem;">
+                <input type="checkbox" style="width: 1rem; height: 1rem;" />
+                <span style="font-size: 0.875rem; color: var(--color-slate-600);">记住登录状态</span>
+              </label>
+              <a href="#" style="font-size: 0.875rem; color: var(--color-primary);">忘记密码？</a>
+            </div>
+
+            <button type="submit" style="width: 100%; background-color: var(--color-primary); color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-size: 1.125rem; font-weight: 500;">登录</button>
+          </form>
+
+          <div style="margin-top: 1.5rem; text-align: center;">
+            <p style="font-size: 0.875rem; color: var(--color-slate-500);">演示账号：admin / admin123</p>
+          </div>
+        </div>
+
+        <p style="margin-top: 1.5rem; text-align: center; font-size: 0.875rem; color: var(--color-slate-500);">
+          © 2026 云鉴治微-社区法治生态智能预警与靶向普控系统
+        </p>
+      </div>
+    </div>
+
+    <script>
+      document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        
+        // 简单验证（实际项目中应与后端验证）
+        if (username && password) {
+          // 保存登录状态
+          localStorage.setItem('user', JSON.stringify({
+            username: username,
+            loginTime: new Date().toISOString()
+          }));
+          // 跳转到主页
+          window.location.href = 'index.html';
+        }
+      });
+    </script>
+  </body>
+</html>

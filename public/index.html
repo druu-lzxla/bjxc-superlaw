@@ -3,20 +3,29 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>社区法治生态智能预警与靶向普控系统</title>
+    <title>云鉴治微-社区法治生态智能预警与靶向普控系统</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body class="bg-slate-50 text-slate-900 leading-relaxed">
+  <body style="background-color: var(--color-paper);">
     <div class="min-h-screen flex flex-col">
-      <header class="bg-white shadow-sm">
+      <header style="background-color: white; border-bottom: 3px solid var(--color-primary);">
         <div class="mx-auto max-w-7xl px-6 py-8">
-          <div class="text-slate-900">
-            <h1 class="text-3xl font-semibold">基于风险感知的社区法治生态智能预警与靶向普控系统</h1>
-            <p class="mt-4 max-w-3xl text-slate-600 sm:text-base">
-              本系统服务检察院法律监督，提升基层治理精准性，强化风险预警能力，支持治理闭环。
-            </p>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <img src="images/logo.svg" alt="Logo" class="h-12 w-auto" onerror="this.style.display='none'" />
+              <h1 style="font-family: var(--font-title); font-size: 2rem; font-weight: 900; color: var(--color-primary);">云鉴治微</h1>
+            </div>
+            <div class="flex items-center gap-4">
+              <a href="report.html" style="padding: 0.5rem 1rem; border: 2px solid var(--color-primary); border-radius: 0.5rem; color: var(--color-primary); font-size: 0.875rem; font-weight: 500;">个性化报告</a>
+              <button id="loginBtn" style="background-color: var(--color-primary); color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500;">登录</button>
+              <span id="userDisplay" class="hidden text-sm text-slate-600"></span>
+              <button id="logoutBtn" class="hidden rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-600 transition hover:bg-slate-50">退出</button>
+            </div>
           </div>
+          <p class="mt-4 max-w-3xl text-slate-600 sm:text-base">
+            社区法治生态智能预警与靶向普控系统 — 服务检察院法律监督，提升基层治理精准性，强化风险预警能力，支持治理闭环。
+          </p>
         </div>
       </header>
 
@@ -30,71 +39,71 @@
                   <p class="mt-2 text-sm text-slate-500">风险类型：<span id="riskTypes" class="font-semibold text-slate-800"></span></p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
-                  <span class="rounded-full bg-red-100 px-3 py-1 text-sm font-medium text-red-700">高风险</span>
-                  <span class="rounded-full bg-orange-100 px-3 py-1 text-sm font-medium text-orange-700">中风险</span>
-                  <span class="rounded-full bg-sky-100 px-3 py-1 text-sm font-medium text-sky-700">低风险</span>
+                  <span style="background-color: var(--color-danger); color: white; padding: 0.25rem 0.75rem; border-radius: 0.25rem; font-size: 0.875rem; font-weight: 500;">高风险</span>
+                  <span style="background-color: #d97706; color: white; padding: 0.25rem 0.75rem; border-radius: 0.25rem; font-size: 0.875rem; font-weight: 500;">中风险</span>
+                  <span style="background-color: #059669; color: white; padding: 0.25rem 0.75rem; border-radius: 0.25rem; font-size: 0.875rem; font-weight: 500;">低风险</span>
                 </div>
               </div>
 
               <div class="mt-6 space-y-5">
-                <div class="rounded-3xl bg-slate-50 p-5">
-                  <h2 class="text-lg font-semibold text-slate-900">治理建议</h2>
+                <div style="background-color: var(--color-slate-50); border-left: 4px solid var(--color-accent); padding: 1.25rem; border-radius: 0 0.5rem 0.5rem 0; margin-bottom: 1.25rem;">
+                  <h3 style="font-family: var(--font-title); font-size: 1.125rem; font-weight: 700; color: var(--color-primary); margin-bottom: 0.75rem;">治理建议</h3>
                   <p id="pushGovernance" class="mt-3 text-slate-700 whitespace-pre-line"></p>
                 </div>
-                <div class="rounded-3xl bg-slate-50 p-5">
-                  <h2 class="text-lg font-semibold text-slate-900">普法内容</h2>
+                <div style="background-color: var(--color-slate-50); border-left: 4px solid var(--color-accent); padding: 1.25rem; border-radius: 0 0.5rem 0.5rem 0; margin-bottom: 1.25rem;">
+                  <h3 style="font-family: var(--font-title); font-size: 1.125rem; font-weight: 700; color: var(--color-primary); margin-bottom: 0.75rem;">普法内容</h3>
                   <p id="pushLaw" class="mt-3 text-slate-700 whitespace-pre-line"></p>
                 </div>
-                <div class="rounded-3xl bg-slate-50 p-5">
-                  <h2 class="text-lg font-semibold text-slate-900">处置要求</h2>
+                <div style="background-color: var(--color-slate-50); border-left: 4px solid var(--color-accent); padding: 1.25rem; border-radius: 0 0.5rem 0.5rem 0;">
+                  <h3 style="font-family: var(--font-title); font-size: 1.125rem; font-weight: 700; color: var(--color-primary); margin-bottom: 0.75rem;">处置要求</h3>
                   <p id="pushAction" class="mt-3 text-slate-700 whitespace-pre-line"></p>
                 </div>
               </div>
 
               <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <button id="refreshPush" class="inline-flex items-center justify-center rounded-2xl bg-sky-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700">刷新推送</button>
-                <button id="markHandled" class="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-50">已处置</button>
+                <button id="refreshPush" style="background-color: var(--color-primary); color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 500;">刷新推送</button>
+                <button id="markHandled" style="background-color: transparent; color: var(--color-primary); padding: 0.75rem 1.5rem; border: 2px solid var(--color-primary); border-radius: 0.5rem; font-weight: 500;">已处置</button>
                 <span id="feedbackStatus" class="text-sm text-slate-500"></span>
               </div>
             </div>
 
             <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h2 class="text-xl font-semibold text-slate-900">风险画像概览</h2>
+              <h2 style="font-family: var(--font-title); font-size: 1.25rem; font-weight: 700; color: var(--color-primary); padding-bottom: 0.75rem; border-bottom: 2px solid var(--color-primary);">风险画像概览</h2>
               <div class="mt-4 grid gap-4 sm:grid-cols-2">
-                <div class="rounded-2xl bg-slate-50 p-4">
-                  <p class="text-sm text-slate-500">社区摘要</p>
-                  <p id="riskSummary" class="mt-2 text-slate-700"></p>
+                <div style="background-color: var(--color-slate-50); padding: 1rem; border-radius: 0.5rem;">
+                  <p style="font-size: 0.875rem; color: var(--color-slate-500);">社区摘要</p>
+                  <p id="riskSummary" style="margin-top: 0.5rem; color: var(--color-slate-700);"></p>
                 </div>
-                <div class="rounded-2xl bg-slate-50 p-4">
-                  <p class="text-sm text-slate-500">关键指标</p>
-                  <ul id="riskIndicators" class="mt-2 space-y-2 text-slate-700"></ul>
+                <div style="background-color: var(--color-slate-50); padding: 1rem; border-radius: 0.5rem;">
+                  <p style="font-size: 0.875rem; color: var(--color-slate-500);">关键指标</p>
+                  <ul id="riskIndicators" style="margin-top: 0.5rem; color: var(--color-slate-700); list-style: none;"></ul>
                 </div>
               </div>
             </div>
           </section>
 
-          <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <section style="background-color: white; border: 1px solid var(--color-slate-200); border-radius: 1rem; padding: 1.5rem; box-shadow: var(--shadow-md);">
             <div class="flex items-center justify-between gap-4">
               <div>
-                <h2 class="text-xl font-semibold text-slate-900">法治治理AI助手</h2>
-                <p class="mt-2 text-sm text-slate-500">直接提问，获取基于风险背景的治理与普法建议。</p>
+                <h2 style="font-family: var(--font-title); font-size: 1.25rem; font-weight: 700; color: var(--color-primary);">法治治理AI助手</h2>
+                <p class="mt-2" style="font-size: 0.875rem; color: var(--color-slate-500);">直接提问，获取基于风险背景的治理与普法建议。</p>
               </div>
-              <span class="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700">在线</span>
+              <span style="background-color: rgba(5, 150, 105, 0.1); color: #059669; border: 1px solid #059669; padding: 0.25rem 0.75rem; border-radius: 0.25rem; font-size: 0.875rem;">在线</span>
             </div>
 
-            <div id="chatWindow" class="mt-6 flex h-[450px] flex-col gap-4 overflow-y-auto rounded-3xl bg-slate-50 p-5">
-              <div class="text-sm text-slate-500">聊天记录将显示在此处。</div>
+            <div id="chatWindow" style="height: 450px; background-color: var(--color-slate-50); padding: 1.25rem; border-radius: 1rem; border: 1px solid var(--color-slate-200); overflow-y: auto; display: flex; flex-direction: column; gap: 1rem;">
+              <div style="font-size: 0.875rem; color: var(--color-slate-500);">聊天记录将显示在此处。</div>
             </div>
 
             <form id="chatForm" class="mt-6 flex flex-col gap-3 sm:flex-row">
-              <input id="chatInput" type="text" placeholder="请输入问题，例如：当前应重点开展哪些普法活动？" class="flex-1 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100" />
-              <button type="submit" class="rounded-2xl bg-sky-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-700">发送</button>
+              <input id="chatInput" type="text" placeholder="请输入问题，例如：当前应重点开展哪些普法活动？" style="flex: 1; background-color: white; border: 1px solid var(--color-slate-300); border-radius: 0.5rem; padding: 0.75rem 1rem;" />
+              <button type="submit" style="background-color: var(--color-primary); color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 500;">发送</button>
             </form>
           </section>
         </div>
       </main>
 
-      <footer class="border-t border-slate-200 bg-slate-100 py-5">
+      <footer style="border-top: 2px solid var(--color-slate-200); background-color: var(--color-slate-100); padding: 1.25rem 0;">
         <div class="mx-auto max-w-7xl px-6 text-sm text-slate-600">
           本系统已实现“数据融合→风险画像→靶向治理→效果评估”全流程闭环，符合西城区检察院社区法治治理智能化建设要求。
         </div>

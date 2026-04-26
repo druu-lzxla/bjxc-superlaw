@@ -11,6 +11,7 @@ const riskProfile = {
   }
 };
 
+// DOM 元素
 const communityNameEl = document.getElementById('communityName');
 const riskTypesEl = document.getElementById('riskTypes');
 const riskSummaryEl = document.getElementById('riskSummary');
@@ -24,6 +25,32 @@ const chatForm = document.getElementById('chatForm');
 const chatInput = document.getElementById('chatInput');
 const refreshPushButton = document.getElementById('refreshPush');
 const markHandledButton = document.getElementById('markHandled');
+const loginBtn = document.getElementById('loginBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+const userDisplay = document.getElementById('userDisplay');
+
+// 检查登录状态并更新UI
+function checkLoginStatus() {
+  const userData = localStorage.getItem('user');
+  if (userData) {
+    const user = JSON.parse(userData);
+    loginBtn.classList.add('hidden');
+    userDisplay.classList.remove('hidden');
+    userDisplay.textContent = `欢迎，${user.username}`;
+    logoutBtn.classList.remove('hidden');
+  }
+}
+
+// 登录按钮事件
+loginBtn.addEventListener('click', () => {
+  window.location.href = 'login.html';
+});
+
+// 退出登录按钮事件
+logoutBtn.addEventListener('click', () => {
+  localStorage.removeItem('user');
+  window.location.href = 'login.html';
+});
 
 function renderRiskProfile() {
   communityNameEl.textContent = riskProfile.communityName;
@@ -40,8 +67,27 @@ function renderRiskProfile() {
 
 function appendMessage(content, role) {
   const wrapper = document.createElement('div');
-  wrapper.className = `message-bubble max-w-[90%] rounded-3xl p-4 text-sm leading-6 shadow-sm ${role === 'user' ? 'ml-auto bg-sky-100 text-slate-900' : 'bg-white text-slate-800'}`;
-  wrapper.innerHTML = `<div class="font-medium ${role === 'user' ? 'text-sky-700' : 'text-slate-700'}">${role === 'user' ? '用户' : 'AI 助手'}</div><div class="mt-2 whitespace-pre-wrap">${content}</div>`;
+  wrapper.style.maxWidth = '85%';
+  wrapper.style.padding = '1rem 1.25rem';
+  wrapper.style.borderRadius = '1rem';
+  wrapper.style.fontSize = '0.9375rem';
+  wrapper.style.lineHeight = '1.6';
+  wrapper.style.boxShadow = 'var(--shadow-sm)';
+  
+  if (role === 'user') {
+    wrapper.style.background = 'linear-gradient(135deg, var(--color-primary) 0%, #1e40af 100%)';
+    wrapper.style.color = 'white';
+    wrapper.style.marginLeft = 'auto';
+    wrapper.style.borderBottomRightRadius = '4px';
+    wrapper.innerHTML = `<div style="font-weight: 600; margin-bottom: 0.5rem;">用户</div><div style="white-space: pre-wrap;">${content}</div>`;
+  } else {
+    wrapper.style.backgroundColor = 'white';
+    wrapper.style.color = 'var(--color-ink)';
+    wrapper.style.border = '1px solid var(--color-slate-200)';
+    wrapper.style.borderBottomLeftRadius = '4px';
+    wrapper.innerHTML = `<div style="font-weight: 700; font-family: var(--font-title); color: var(--color-primary); margin-bottom: 0.5rem; font-size: 0.875rem;">AI 助手</div><div style="white-space: pre-wrap;">${content}</div>`;
+  }
+  
   chatWindow.appendChild(wrapper);
   chatWindow.scrollTop = chatWindow.scrollHeight;
 }
@@ -140,3 +186,4 @@ function restoreFeedback() {
 renderRiskProfile();
 restoreFeedback();
 loadPush();
+checkLoginStatus();
