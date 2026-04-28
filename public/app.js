@@ -28,6 +28,23 @@ const markHandledButton = document.getElementById('markHandled');
 const loginBtn = document.getElementById('loginBtn');
 const logoutBtn = document.getElementById('logoutBtn');
 const userDisplay = document.getElementById('userDisplay');
+const activeRegionEl = document.getElementById('activeRegion');
+
+let currentRegion = '西城区德胜街道';
+let availableRegions = [
+  {
+    name: currentRegion,
+    address: '北京市西城区德胜街道德外大街甲5号（德胜街道办事处）',
+    lngLat: [116.376706, 39.949297]
+  }
+];
+
+function setCurrentRegion(regionName) {
+  currentRegion = regionName;
+  if (activeRegionEl) {
+    activeRegionEl.textContent = `当前区域：${regionName}`;
+  }
+}
 
 // 检查登录状态并更新UI
 function checkLoginStatus() {
@@ -92,13 +109,15 @@ function appendMessage(content, role) {
   chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
-async function loadPush() {
+async function loadPush(regionName = currentRegion) {
   pushGovernanceEl.textContent = '加载中，请稍候...';
   pushLawEl.textContent = '';
   pushActionEl.textContent = '';
 
+  setCurrentRegion(regionName);
+
   try {
-    const response = await fetch('/api/push');
+    const response = await fetch(`/api/push?region=${encodeURIComponent(regionName)}`);
     const text = await response.text();
 
     const sections = text.split(/\n\n(?=【)/).map((part) => part.trim());
@@ -123,6 +142,97 @@ async function loadPush() {
     pushLawEl.textContent = '';
     pushActionEl.textContent = '';
     console.error('读取推送失败：', error);
+  }
+}
+
+function loadAmapScript(amapKey) {
+  return new Promise((resolve, reject) => {
+    if (window.AMap) {
+      resolve(window.AMap);
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = `https://webapi.amap.com/maps?v=2.0&key=${encodeURIComponent(amapKey)}`;
+    script.async = true;
+    script.onload = () => resolve(window.AMap);
+    script.onerror = () => reject(new Error('高德地图脚本加载失败'));
+    document.head.appendChild(script);
+  });
+}
+
+async function initRegionMap() {
+  const mapContainer = document.getElementById('amapContainer');
+  if (!mapContainer) return;
+
+  try {
+    const regionsRes = await fetch('/api/regions');
+    if (regionsRes.ok) {
+      const regionsData = await regionsRes.json();
+      availableRegions = regionsData.regions || availableRegions;
+      if (regionsData.defaultRegion) {
+        setCurrentRegion(regionsData.defaultRegion);
+      }
+    }
+
+    const configRes = await fetch('/api/config');
+    const config = await configRes.json();
+
+    if (config.amapSecurityJsCode) {
+      window._AMapSecurityConfig = {
+        securityJsCode: config.amapSecurityJsCode
+      };
+    }
+
+    if (!config.amapKey) {
+      mapContainer.innerHTML = '<div style="padding: 1rem; color: var(--color-slate-500); font-size: 0.875rem;">未配置 AMAP_API_KEY，地图不可用。请在 .env 中配置后刷新。</div>';
+      return;
+    }
+
+    const AMap = await loadAmapScript(config.amapKey);
+    const defaultRegionData = availableRegions.find((region) => region.name === currentRegion) || availableRegions[0];
+    const center = defaultRegionData?.lngLat || [116.38, 39.91];
+    const map = new AMap.Map('amapContainer', {
+      viewMode: '2D',
+      zoom: 12,
+      center,
+      resizeEnable: true
+    });
+
+    availableRegions.forEach((regionItem) => {
+      const regionName = regionItem.name;
+      const lngLat = regionItem.lngLat;
+      if (!lngLat) return;
+
+      const marker = new AMap.Marker({
+        position: lngLat,
+        title: regionName
+      });
+
+      marker.setLabel({
+        direction: 'right',
+        offset: new AMap.Pixel(8, 0),
+        content: `<div style="font-size:12px;color:#1e3a8a;background:#fff;padding:2px 6px;border:1px solid #cbd5e1;border-radius:4px;">${regionName}</div>`
+      });
+
+      const infoWindow = new AMap.InfoWindow({
+        content: `<div style="font-size:13px;line-height:1.5;"><div style="font-weight:700;color:#1e3a8a;">${regionName}</div><div style="color:#475569;">${regionItem.address || '西城区'}</div></div>`,
+        offset: new AMap.Pixel(0, -28)
+      });
+
+      marker.on('click', () => {
+        setCurrentRegion(regionName);
+        infoWindow.open(map, lngLat);
+        loadPush(regionName);
+      });
+
+      map.add(marker);
+    });
+
+    map.setFitView();
+  } catch (error) {
+    mapContainer.innerHTML = '<div style="padding: 1rem; color: var(--color-danger); font-size: 0.875rem;">地图初始化失败，请稍后重试。</div>';
+    console.error('地图初始化失败：', error);
   }
 }
 
@@ -165,7 +275,7 @@ chatInput.addEventListener('keydown', (event) => {
   }
 });
 
-refreshPushButton.addEventListener('click', loadPush);
+refreshPushButton.addEventListener('click', () => loadPush(currentRegion));
 
 markHandledButton.addEventListener('click', () => {
   const feedbackText = prompt('请填写处置反馈：', '已完成重点巡查、矛盾纠纷已登记并安排处理。');
@@ -185,5 +295,6 @@ function restoreFeedback() {
 
 renderRiskProfile();
 restoreFeedback();
-loadPush();
+initRegionMap();
+loadPush(currentRegion);
 checkLoginStatus();
