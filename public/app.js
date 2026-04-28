@@ -1,8 +1,4 @@
-const riskProfile = {
-  communityName: '西城区党建街道社区',
-  riskLevel: '高风险',
-  riskTypes: ['治安隐患', '矛盾纠纷', '集中上访'],
-  summary: '当前社区重点关注治安隐患、矛盾纠纷和群众信访问题，需提前介入并加强法治宣传。',
+@@ -6,50 +6,67 @@ const riskProfile = {
   indicators: {
     '社会治安': '高',
     '矛盾纠纷': '中',
@@ -70,20 +66,7 @@ logoutBtn.addEventListener('click', () => {
 });
 
 function renderRiskProfile() {
-  communityNameEl.textContent = riskProfile.communityName;
-  riskTypesEl.textContent = riskProfile.riskTypes.join(' / ');
-  riskSummaryEl.textContent = riskProfile.summary;
-
-  riskIndicatorsEl.innerHTML = '';
-  Object.entries(riskProfile.indicators).forEach(([label, value]) => {
-    const li = document.createElement('li');
-    li.textContent = `${label}：${value}`;
-    riskIndicatorsEl.appendChild(li);
-  });
-}
-
-function appendMessage(content, role) {
-  const wrapper = document.createElement('div');
+@@ -70,120 +87,214 @@ function appendMessage(content, role) {
   wrapper.style.maxWidth = '85%';
   wrapper.style.padding = '1rem 1.25rem';
   wrapper.style.borderRadius = '1rem';
@@ -109,6 +92,7 @@ function appendMessage(content, role) {
   chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
+async function loadPush() {
 async function loadPush(regionName = currentRegion) {
   pushGovernanceEl.textContent = '加载中，请稍候...';
   pushLawEl.textContent = '';
@@ -117,6 +101,7 @@ async function loadPush(regionName = currentRegion) {
   setCurrentRegion(regionName);
 
   try {
+    const response = await fetch('/api/push');
     const response = await fetch(`/api/push?region=${encodeURIComponent(regionName)}`);
     const text = await response.text();
 
@@ -275,6 +260,7 @@ chatInput.addEventListener('keydown', (event) => {
   }
 });
 
+refreshPushButton.addEventListener('click', loadPush);
 refreshPushButton.addEventListener('click', () => loadPush(currentRegion));
 
 markHandledButton.addEventListener('click', () => {
@@ -295,6 +281,7 @@ function restoreFeedback() {
 
 renderRiskProfile();
 restoreFeedback();
+loadPush();
 initRegionMap();
 loadPush(currentRegion);
 checkLoginStatus();
