@@ -28,6 +28,23 @@ const markHandledButton = document.getElementById('markHandled');
 const loginBtn = document.getElementById('loginBtn');
 const logoutBtn = document.getElementById('logoutBtn');
 const userDisplay = document.getElementById('userDisplay');
+const activeRegionEl = document.getElementById('activeRegion');
+
+let currentRegion = '西城区德胜街道';
+let availableRegions = [currentRegion];
+
+const regionCoordinates = {
+  '西城区德胜街道': [116.3794, 39.9396],
+  '西城区金融街街道': [116.3667, 39.9173],
+  '西城区牛街街道': [116.3695, 39.8839]
+};
+
+function setCurrentRegion(regionName) {
+  currentRegion = regionName;
+  if (activeRegionEl) {
+    activeRegionEl.textContent = `当前区域：${regionName}`;
+  }
+}
 
 // 检查登录状态并更新UI
 function checkLoginStatus() {
@@ -92,13 +109,15 @@ function appendMessage(content, role) {
   chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
-async function loadPush() {
+async function loadPush(regionName = currentRegion) {
   pushGovernanceEl.textContent = '加载中，请稍候...';
   pushLawEl.textContent = '';
   pushActionEl.textContent = '';
 
+  setCurrentRegion(regionName);
+
   try {
-    const response = await fetch('/api/push');
+    const response = await fetch(`/api/push?region=${encodeURIComponent(regionName)}`);
     const text = await response.text();
 
     const sections = text.split(/\n\n(?=【)/).map((part) => part.trim());
@@ -123,6 +142,80 @@ async function loadPush() {
     pushLawEl.textContent = '';
     pushActionEl.textContent = '';
     console.error('读取推送失败：', error);
+  }
+}
+
+function loadAmapScript(amapKey) {
+  return new Promise((resolve, reject) => {
+    if (window.AMap) {
+      resolve(window.AMap);
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = `https://webapi.amap.com/maps?v=2.0&key=${encodeURIComponent(amapKey)}`;
+    script.async = true;
+    script.onload = () => resolve(window.AMap);
+    script.onerror = () => reject(new Error('高德地图脚本加载失败'));
+    document.head.appendChild(script);
+  });
+}
+
+async function initRegionMap() {
+  const mapContainer = document.getElementById('amapContainer');
+  if (!mapContainer) return;
+
+  try {
+    const regionsRes = await fetch('/api/regions');
+    if (regionsRes.ok) {
+      const regionsData = await regionsRes.json();
+      availableRegions = regionsData.regions || availableRegions;
+      if (regionsData.defaultRegion) {
+        setCurrentRegion(regionsData.defaultRegion);
+      }
+    }
+
+    const configRes = await fetch('/api/config');
+    const config = await configRes.json();
+
+    if (config.amapSecurityJsCode) {
+      window._AMapSecurityConfig = {
+        securityJsCode: config.amapSecurityJsCode
+      };
+    }
+
+    if (!config.amapKey) {
+      mapContainer.innerHTML = '<div style="padding: 1rem; color: var(--color-slate-500); font-size: 0.875rem;">未配置 AMAP_API_KEY，地图不可用。请在 .env 中配置后刷新。</div>';
+      return;
+    }
+
+    const AMap = await loadAmapScript(config.amapKey);
+    const center = regionCoordinates[currentRegion] || [116.38, 39.91];
+    const map = new AMap.Map('amapContainer', {
+      zoom: 12,
+      center,
+      resizeEnable: true
+    });
+
+    availableRegions.forEach((regionName) => {
+      const lngLat = regionCoordinates[regionName];
+      if (!lngLat) return;
+
+      const marker = new AMap.Marker({
+        position: lngLat,
+        title: regionName
+      });
+
+      marker.on('click', () => {
+        setCurrentRegion(regionName);
+        loadPush(regionName);
+      });
+
+      map.add(marker);
+    });
+  } catch (error) {
+    mapContainer.innerHTML = '<div style="padding: 1rem; color: var(--color-danger); font-size: 0.875rem;">地图初始化失败，请稍后重试。</div>';
+    console.error('地图初始化失败：', error);
   }
 }
 
@@ -165,7 +258,7 @@ chatInput.addEventListener('keydown', (event) => {
   }
 });
 
-refreshPushButton.addEventListener('click', loadPush);
+refreshPushButton.addEventListener('click', () => loadPush(currentRegion));
 
 markHandledButton.addEventListener('click', () => {
   const feedbackText = prompt('请填写处置反馈：', '已完成重点巡查、矛盾纠纷已登记并安排处理。');
@@ -185,5 +278,6 @@ function restoreFeedback() {
 
 renderRiskProfile();
 restoreFeedback();
-loadPush();
+initRegionMap();
+loadPush(currentRegion);
 checkLoginStatus();

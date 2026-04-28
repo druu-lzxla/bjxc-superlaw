@@ -46,6 +46,13 @@
               </div>
 
               <div class="mt-6 space-y-5">
+                <div style="background-color: var(--color-slate-50); border: 1px solid var(--color-slate-200); padding: 1rem; border-radius: 0.75rem;">
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <h3 style="font-family: var(--font-title); font-size: 1.125rem; font-weight: 700; color: var(--color-primary);">区域态势地图（高德）</h3>
+                    <span id="activeRegion" style="font-size: 0.875rem; color: var(--color-slate-500);">当前区域：西城区德胜街道</span>
+                  </div>
+                  <div id="amapContainer" style="width: 100%; height: 300px; margin-top: 0.75rem; border-radius: 0.5rem; border: 1px solid var(--color-slate-200); overflow: hidden;"></div>
+                </div>
                 <div style="background-color: var(--color-slate-50); border-left: 4px solid var(--color-accent); padding: 1.25rem; border-radius: 0 0.5rem 0.5rem 0; margin-bottom: 1.25rem;">
                   <h3 style="font-family: var(--font-title); font-size: 1.125rem; font-weight: 700; color: var(--color-primary); margin-bottom: 0.75rem;">治理建议</h3>
                   <p id="pushGovernance" class="mt-3 text-slate-700 whitespace-pre-line"></p>
