@@ -1,8 +1,4 @@
-const riskProfile = {
-  communityName: '西城区党建街道社区',
-  riskLevel: '高风险',
-  riskTypes: ['治安隐患', '矛盾纠纷', '集中上访'],
-  summary: '当前社区重点关注治安隐患、矛盾纠纷和群众信访问题，需提前介入并加强法治宣传。',
+@@ -6,50 +6,67 @@ const riskProfile = {
   indicators: {
     '社会治安': '高',
     '矛盾纠纷': '中',
@@ -31,13 +27,13 @@ const userDisplay = document.getElementById('userDisplay');
 const activeRegionEl = document.getElementById('activeRegion');
 
 let currentRegion = '西城区德胜街道';
-let availableRegions = [currentRegion];
-
-const regionCoordinates = {
-  '西城区德胜街道': [116.3794, 39.9396],
-  '西城区金融街街道': [116.3667, 39.9173],
-  '西城区牛街街道': [116.3695, 39.8839]
-};
+let availableRegions = [
+  {
+    name: currentRegion,
+    address: '北京市西城区德胜街道德外大街甲5号（德胜街道办事处）',
+    lngLat: [116.376706, 39.949297]
+  }
+];
 
 function setCurrentRegion(regionName) {
   currentRegion = regionName;
@@ -70,20 +66,7 @@ logoutBtn.addEventListener('click', () => {
 });
 
 function renderRiskProfile() {
-  communityNameEl.textContent = riskProfile.communityName;
-  riskTypesEl.textContent = riskProfile.riskTypes.join(' / ');
-  riskSummaryEl.textContent = riskProfile.summary;
-
-  riskIndicatorsEl.innerHTML = '';
-  Object.entries(riskProfile.indicators).forEach(([label, value]) => {
-    const li = document.createElement('li');
-    li.textContent = `${label}：${value}`;
-    riskIndicatorsEl.appendChild(li);
-  });
-}
-
-function appendMessage(content, role) {
-  const wrapper = document.createElement('div');
+@@ -70,120 +87,214 @@ function appendMessage(content, role) {
   wrapper.style.maxWidth = '85%';
   wrapper.style.padding = '1rem 1.25rem';
   wrapper.style.borderRadius = '1rem';
@@ -109,6 +92,7 @@ function appendMessage(content, role) {
   chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
+async function loadPush() {
 async function loadPush(regionName = currentRegion) {
   pushGovernanceEl.textContent = '加载中，请稍候...';
   pushLawEl.textContent = '';
@@ -117,6 +101,7 @@ async function loadPush(regionName = currentRegion) {
   setCurrentRegion(regionName);
 
   try {
+    const response = await fetch('/api/push');
     const response = await fetch(`/api/push?region=${encodeURIComponent(regionName)}`);
     const text = await response.text();
 
@@ -190,15 +175,18 @@ async function initRegionMap() {
     }
 
     const AMap = await loadAmapScript(config.amapKey);
-    const center = regionCoordinates[currentRegion] || [116.38, 39.91];
+    const defaultRegionData = availableRegions.find((region) => region.name === currentRegion) || availableRegions[0];
+    const center = defaultRegionData?.lngLat || [116.38, 39.91];
     const map = new AMap.Map('amapContainer', {
+      viewMode: '2D',
       zoom: 12,
       center,
       resizeEnable: true
     });
 
-    availableRegions.forEach((regionName) => {
-      const lngLat = regionCoordinates[regionName];
+    availableRegions.forEach((regionItem) => {
+      const regionName = regionItem.name;
+      const lngLat = regionItem.lngLat;
       if (!lngLat) return;
 
       const marker = new AMap.Marker({
@@ -206,13 +194,27 @@ async function initRegionMap() {
         title: regionName
       });
 
+      marker.setLabel({
+        direction: 'right',
+        offset: new AMap.Pixel(8, 0),
+        content: `<div style="font-size:12px;color:#1e3a8a;background:#fff;padding:2px 6px;border:1px solid #cbd5e1;border-radius:4px;">${regionName}</div>`
+      });
+
+      const infoWindow = new AMap.InfoWindow({
+        content: `<div style="font-size:13px;line-height:1.5;"><div style="font-weight:700;color:#1e3a8a;">${regionName}</div><div style="color:#475569;">${regionItem.address || '西城区'}</div></div>`,
+        offset: new AMap.Pixel(0, -28)
+      });
+
       marker.on('click', () => {
         setCurrentRegion(regionName);
+        infoWindow.open(map, lngLat);
         loadPush(regionName);
       });
 
       map.add(marker);
     });
+
+    map.setFitView();
   } catch (error) {
     mapContainer.innerHTML = '<div style="padding: 1rem; color: var(--color-danger); font-size: 0.875rem;">地图初始化失败，请稍后重试。</div>';
     console.error('地图初始化失败：', error);
@@ -258,6 +260,7 @@ chatInput.addEventListener('keydown', (event) => {
   }
 });
 
+refreshPushButton.addEventListener('click', loadPush);
 refreshPushButton.addEventListener('click', () => loadPush(currentRegion));
 
 markHandledButton.addEventListener('click', () => {
@@ -278,6 +281,7 @@ function restoreFeedback() {
 
 renderRiskProfile();
 restoreFeedback();
+loadPush();
 initRegionMap();
 loadPush(currentRegion);
 checkLoginStatus();

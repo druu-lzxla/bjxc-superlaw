@@ -40,6 +40,8 @@ const FALLBACK_PUSH_TEXT = `【治理建议】
 【处置要求】
 请社区治理单位对重点区域开展昼夜巡查，记录隐患点位，及时向检察机关反馈异常情况；对已排查出的纠纷建立台账，按期复核处置进展。`;
 
+app.get('/api/push', async (req, res) => {
+  const prompt = `请生成默认治理与普法推送（纯文本），基于以下风险画像：\n${JSON.stringify(RISK_PROFILE, null, 2)}`;
 const REGION_PUSH_DATA = {
   '西城区德胜街道': {
     governance: '建议联合街道综治中心与检察联络员，针对老旧小区电动车停放、夜间扰民和重点矛盾点位开展“每周巡查+每月会商”。对重复投诉事项建立“一案一档”并明确责任人。',
@@ -58,6 +60,27 @@ const REGION_PUSH_DATA = {
   }
 };
 
+  try {
+    const result = await getPushContent(prompt);
+    return res.type('text/plain').send(result);
+  } catch (error) {
+    console.error('Push API 调用失败，使用本地 fallback：', error?.message || error);
+    return res.type('text/plain').send(FALLBACK_PUSH_TEXT);
+const REGION_LOCATIONS = {
+  '西城区德胜街道': {
+    address: '北京市西城区德胜街道德外大街甲5号（德胜街道办事处）',
+    lngLat: [116.376706, 39.949297]
+  },
+  '西城区金融街街道': {
+    address: '北京市西城区金城坊街2号（金融街街道办事处）',
+    lngLat: [116.366023, 39.915189]
+  },
+  '西城区牛街街道': {
+    address: '北京市西城区牛街8号（牛街街道办事处）',
+    lngLat: [116.370273, 39.890095]
+  }
+};
+
 function toPushText(regionName) {
   const regionData = REGION_PUSH_DATA[regionName] || REGION_PUSH_DATA[DEFAULT_REGION];
   return `【治理建议】\n${regionData.governance}\n\n【普法内容】\n${regionData.law}\n\n【处置要求】\n${regionData.action}`;
@@ -71,9 +94,14 @@ app.get('/api/config', (req, res) => {
 });
 
 app.get('/api/regions', (req, res) => {
+  const regions = Object.keys(REGION_PUSH_DATA).map((name) => ({
+    name,
+    ...(REGION_LOCATIONS[name] || {})
+  }));
+
   return res.json({
     defaultRegion: DEFAULT_REGION,
-    regions: Object.keys(REGION_PUSH_DATA)
+    regions
   });
 });
 
@@ -106,111 +134,3 @@ app.post('/api/evaluate', (req, res) => {
   const evaluationMock = {
     status: 'ok',
     summary: '当前根据 mock 数据，治理闭环执行情况稳定，整体风险略有下降。',
-    metrics: {
-      riskTrend: '下降',
-      feedbackReceived: 18,
-      interventionCoverage: '85%',
-      suggestedFollowUp: '继续强化重点人群法治宣传，并完善信息共享机制。'
-    },
-    notes: [
-      '后续可接入真实处置反馈数据',
-      '建议结合街道矛盾调处台账做效果评估',
-      '未来可展示风险变化趋势图表'
-    ]
-  };
-
-  return res.json(evaluationMock);
-});
-
-// 登录验证
-app.post('/api/login', (req, res) => {
-  const { username, password } = req.body;
-  
-  // 简单验证（实际项目中应查询数据库）
-  const validUsers = {
-    'admin': 'admin123',
-    'user': 'user123',
-    'demo': 'demo123'
-  };
-  
-  if (validUsers[username] && validUsers[username] === password) {
-    return res.json({
-      success: true,
-      user: { username, role: username === 'admin' ? 'admin' : 'user' }
-    });
-  } else {
-    return res.status(401).json({ error: '用户名或密码错误' });
-  }
-});
-
-// 个性化报告生成
-app.post('/api/generate-report', async (req, res) => {
-  const { username } = req.body;
-  
-  const prompt = `请为用户 "${username}" 生成一份个性化的社区治理报告，包含以下内容：
-1. 用户关注领域分析
-2. 基于风险画像的治理建议
-3. 近期推送内容回顾
-4. 下一步行动建议
-
-当前风险画像：${JSON.stringify(RISK_PROFILE, null, 2)}`;
-
-  try {
-    const content = await getPushContent(prompt);
-    const report = {
-      title: `${username} 的个性化治理报告`,
-      content: content,
-      generatedAt: new Date().toLocaleString(),
-      username: username
-    };
-    return res.json({ report });
-  } catch (error) {
-    console.error('生成报告失败：', error?.message || error);
-    return res.json({
-      report: {
-        title: `${username} 的个性化治理报告`,
-        content: FALLBACK_PUSH_TEXT,
-        generatedAt: new Date().toLocaleString(),
-        username: username
-      }
-    });
-  }
-});
-
-// 获取个性化报告
-app.post('/api/personalized-report', async (req, res) => {
-  const { username } = req.body;
-  
-  // 简单实现：返回基于用户历史的个性化报告
-  const prompt = `请为用户 "${username}" 生成一份简要的个性化社区治理报告（基于已有数据）。
-
-当前风险画像：${JSON.stringify(RISK_PROFILE, null, 2)}`;
-
-  try {
-    const content = await getPushContent(prompt);
-    return res.json({
-      report: {
-        title: `${username} 的个性化治理报告`,
-        content: content,
-        generatedAt: new Date().toLocaleString()
-      }
-    });
-  } catch (error) {
-    console.error('获取报告失败：', error?.message || error);
-    return res.json({
-      report: {
-        title: `${username} 的个性化治理报告`,
-        content: FALLBACK_PUSH_TEXT,
-        generatedAt: new Date().toLocaleString()
-      }
-    });
-  }
-});
-
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-app.listen(PORT, () => {
-  console.log(`服务已启动，访问 http://localhost:${PORT}`);
-});
